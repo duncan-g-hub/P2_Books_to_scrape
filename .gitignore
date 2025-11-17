@@ -1,2 +1,6 @@
 .venv
 .idea
+data
+*.csv
+*.png
+*.jpg
