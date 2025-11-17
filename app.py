@@ -19,7 +19,7 @@ def get_soup_from_request(url):
 
 
 # _____Récupérer les urls de chaque catégories_____
-def get_gategories_urls(main_url) -> list:
+def get_categories_urls(main_url) -> list:
     soup = get_soup_from_request(main_url)
     nav_list = soup.find("ul", class_="nav nav-list")
     categories = nav_list.find_all("li")[1:]
@@ -28,7 +28,6 @@ def get_gategories_urls(main_url) -> list:
         category_url = f"{main_url}/{category.find("a").get("href")}"
         categories_urls.append(category_url)
     return categories_urls
-
 
 
 # _____ créer une liste d'url en fonction du nombre de pages d'une catégorie_____
@@ -70,7 +69,6 @@ def get_product_informations(product_urls: list) -> list[dict]:
     products_informations = []
 
     for product_url in product_urls:
-        print(product_url)
         soup = get_soup_from_request(product_url)
 
         # ___url___
@@ -95,8 +93,8 @@ def get_product_informations(product_urls: list) -> list[dict]:
         description_header = soup.find("div", id="product_description")
         if description_header:
             product_description = description_header.find_next("p").get_text(strip=True)
-        else :
-            product_description =""
+        else:
+            product_description = ""
 
         # ___product informations___
         informations = soup.find(class_="table table-striped")
@@ -122,20 +120,39 @@ def get_product_informations(product_urls: list) -> list[dict]:
         products_informations.append(product_informations)
     return products_informations
 
+def _create_category_dir(product_informations):
+    CAT_DIR = DATA_DIR / product_informations[0].get("category")
+    CAT_DIR.mkdir(parents=True, exist_ok=True)
+    return CAT_DIR
+
+# _____telecharger les images de chaque livre_____
+# utilisation du mode d'ouverture "wb" pour write binary
+def save_image_from_product_information(product_informations):
+    CAT_DIR = _create_category_dir(product_informations)
+    for product_information in product_informations:
+        image_url = product_information["image_url"]
+        content = requests.get(image_url).content
+        image_name = f"{product_information['title'].replace(":","")}.jpg"
+        with open(CAT_DIR / "image" / image_name, "wb") as image_file:
+            image_file.write(content)
+
 
 # _____stocker les données extraites dans un fichier csv_____
 def save_product_informations_in_csv(products_informations: list[dict]):
-    with open(f"{DATA_DIR}/{products_informations[0].get("category")}.csv", "w", newline="",
+    CAT_DIR = _create_category_dir(product_informations)
+    CAT_DIR.mkdir(parents=True, exist_ok=True)
+    with open(f"{CAT_DIR}/{products_informations[0].get("category")}.csv", "w", newline="",
               encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=products_informations[0].keys(), delimiter=",")
         writer.writeheader()
         for product_information in products_informations:
             writer.writerow(product_information)
+    print(f"Tous les livres de la catégorie {products_informations[0].get('category')} ont étés sauvegardés...")
 
 
 # _____Fonction main pour lancer l'application à partir de l'url principal du site_____
 def main():
-    gategories_urls = get_gategories_urls(main_url)
+    gategories_urls = get_categories_urls(main_url)
     for category_url in gategories_urls:
         pages_urls = get_pages_urls_from_category(category_url)
         products_urls = get_products_urls_from_category(pages_urls)
@@ -144,9 +161,13 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-    # url_test = "https://books.toscrape.com/catalogue/category/books/classics_6/index.html"
-    # pages_urls = get_pages_urls_from_category(url_test)
-    # products_urls = get_products_urls_from_category(pages_urls)
-    # product_informations = get_product_informations(products_urls)
+    pass
+
+    # main()
+
+    url_test = "https://books.toscrape.com/catalogue/category/books/philosophy_7/index.html"
+    pages_urls = get_pages_urls_from_category(url_test)
+    products_urls = get_products_urls_from_category(pages_urls)
+    product_informations = get_product_informations(products_urls)
+    save_image_from_product_information(product_informations)
     # save_product_informations_in_csv(product_informations)
