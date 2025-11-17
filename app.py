@@ -123,16 +123,17 @@ def get_category_from_url(category_url) -> str:
 
 
 # _____stocker les données extraites dans un fichier csv_____
-def save_product_informations_in_csv(product_informations:list [dict]):
-    with open(f"{DATA_DIR}/{product_informations['title']}.csv", "w", newline="") as csvfile: #newline ="" permet d'empecher la création de ligne vide dans le fichier csv
-        writer = csv.DictWriter(csvfile, fieldnames=product_informations.keys(), delimiter=",")
+def save_product_informations_in_csv(products_informations:list [dict], category_name:str):
+    with open(f"{DATA_DIR}/{category_name}.csv", "w", newline="") as csvfile: #newline ="" permet d'empecher la création de ligne vide dans le fichier csv
+        writer = csv.DictWriter(csvfile, fieldnames=products_informations[0].keys(), delimiter=",")
         writer.writeheader()
-        writer.writerow(product_informations)
+        for product_information in products_informations:
+            writer.writerow(product_information)
 
 
 
 if __name__ == "__main__":
-    url = "https://books.toscrape.com/catalogue/category/products/mystery_3/page-1.html"
+    url = "https://books.toscrape.com/catalogue/category/books/mystery_3/page-1.html"
     pages_urls = get_pages_urls_from_category(url)
     category = get_category_from_url(url)
     products_urls = get_products_urls_from_category(pages_urls)
