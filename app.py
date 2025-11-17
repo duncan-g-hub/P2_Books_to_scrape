@@ -110,8 +110,20 @@ def get_pages_urls_from_category(category_url) -> list :
     return pages_urls
 
 
+#_____récupérer la catégorie en fonction de l'url de catégorie_____
+def get_category_from_url(category_url) -> str:
+    r = requests.get(category_url)
+    if not r.status_code == 200:
+        raise ValueError("Impossible de récupérer l'url.")
+    soup = BeautifulSoup(r.content, "html.parser")
+    category_name = soup.find("h1").get_text(strip=True)
+    return category_name
+
+
+
+
 # _____stocker les données extraites dans un fichier csv_____
-def save_product_informations_in_csv(product_informations:dict):
+def save_product_informations_in_csv(product_informations:list [dict]):
     with open(f"{DATA_DIR}/{product_informations['title']}.csv", "w", newline="") as csvfile: #newline ="" permet d'empecher la création de ligne vide dans le fichier csv
         writer = csv.DictWriter(csvfile, fieldnames=product_informations.keys(), delimiter=",")
         writer.writeheader()
@@ -121,4 +133,8 @@ def save_product_informations_in_csv(product_informations:dict):
 
 if __name__ == "__main__":
     url = "https://books.toscrape.com/catalogue/category/products/mystery_3/page-1.html"
-    get_product_informations(get_products_urls_from_category(get_pages_urls_from_category(url)))
+    pages_urls = get_pages_urls_from_category(url)
+    category = get_category_from_url(url)
+    products_urls = get_products_urls_from_category(pages_urls)
+    product_informations = get_product_informations(products_urls)
+    save_product_informations_in_csv(product_informations, category)
