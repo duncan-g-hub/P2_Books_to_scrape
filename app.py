@@ -70,6 +70,7 @@ def get_product_informations(product_urls: list) -> list[dict]:
     products_informations = []
 
     for product_url in product_urls:
+        print(product_url)
         soup = get_soup_from_request(product_url)
 
         # ___url___
@@ -92,7 +93,10 @@ def get_product_informations(product_urls: list) -> list[dict]:
 
         # ___description___
         description_header = soup.find("div", id="product_description")
-        product_description = description_header.find_next("p").get_text(strip=True)
+        if description_header:
+            product_description = description_header.find_next("p").get_text(strip=True)
+        else :
+            product_description =""
 
         # ___product informations___
         informations = soup.find(class_="table table-striped")
@@ -140,9 +144,9 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    url_test = "https://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"
-    pages_urls = get_pages_urls_from_category(url_test)
-    products_urls = get_products_urls_from_category(pages_urls)
-    product_informations = get_product_informations(products_urls)
-    save_product_informations_in_csv(product_informations)
+    main()
+    # url_test = "https://books.toscrape.com/catalogue/category/books/classics_6/index.html"
+    # pages_urls = get_pages_urls_from_category(url_test)
+    # products_urls = get_products_urls_from_category(pages_urls)
+    # product_informations = get_product_informations(products_urls)
+    # save_product_informations_in_csv(product_informations)
