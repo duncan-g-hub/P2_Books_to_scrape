@@ -9,6 +9,7 @@ DATA_DIR.mkdir(exist_ok=True)
 
 main_url = "https://books.toscrape.com"
 
+
 # _____obtenir une "soup" via une requete sur un url_____
 def get_soup_from_request(url):
     r = requests.get(url)
@@ -29,6 +30,7 @@ def get_gategories_urls(main_url) -> list:
     return categories_urls
 
 
+
 # _____ créer une liste d'url en fonction du nombre de pages d'une catégorie_____
 def get_pages_urls_from_category(category_url) -> list:
     soup = get_soup_from_request(category_url)
@@ -36,12 +38,15 @@ def get_pages_urls_from_category(category_url) -> list:
 
     # ___conditionner le changement de page en fonction du nombre de page___
     next_btn = soup.find("li", class_="next")
-    if next_btn:
+    while next_btn:
         next_url = next_btn.find("a").get("href")
         cat_url = category_url.split("/")
         cat_url[-1] = next_url
         next_url = "/".join(cat_url)
         pages_urls.append(next_url)
+        soup = get_soup_from_request(next_url)
+        next_btn = soup.find("li", class_="next")
+
     return pages_urls
 
 
@@ -62,7 +67,6 @@ def get_products_urls_from_category(pages_urls) -> list:
 
 # _____extraction des informations_____
 def get_product_informations(product_urls: list) -> list[dict]:
-    print(product_urls)
     products_informations = []
 
     for product_url in product_urls:
@@ -117,7 +121,8 @@ def get_product_informations(product_urls: list) -> list[dict]:
 
 # _____stocker les données extraites dans un fichier csv_____
 def save_product_informations_in_csv(products_informations: list[dict]):
-    with open(f"{DATA_DIR}/{products_informations[0].get("category")}.csv", "w",newline="", encoding="utf-8") as csvfile:
+    with open(f"{DATA_DIR}/{products_informations[0].get("category")}.csv", "w", newline="",
+              encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=products_informations[0].keys(), delimiter=",")
         writer.writeheader()
         for product_information in products_informations:
