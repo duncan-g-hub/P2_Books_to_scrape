@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 import csv
 from bs4 import BeautifulSoup
@@ -120,27 +121,30 @@ def get_products_informations(product_urls: list) -> list[dict]:
         products_informations.append(product_informations)
     return products_informations
 
+
 def _create_category_dir(products_informations):
     CAT_DIR = DATA_DIR / products_informations[0].get("category")
     CAT_DIR.mkdir(parents=True, exist_ok=True)
     return CAT_DIR
 
+
 # _____telecharger les images de chaque livre_____
 # utilisation du mode d'ouverture "wb" pour write binary
 def save_products_images(products_informations):
     CAT_DIR = _create_category_dir(products_informations)
+    IM_DIR = CAT_DIR / "images"
+    IM_DIR.mkdir(exist_ok=True)
     for product_informations in products_informations:
-        image_url = product_informations["image_url"]
+        image_url = product_informations.get("image_url")
         content = requests.get(image_url).content
-        image_name = f"{product_informations['title'].replace(":","")}.jpg"
-        with open(CAT_DIR / "image" / image_name, "wb") as image_file:
+        image_name = f"{re.sub(r'[\/\\\:\?\*\"\<\>]', '', product_informations.get('title'))}.jpg"  # re.sub pour remplacer les caracteres non pris en compte par windows
+        with open(IM_DIR / image_name, "wb") as image_file:
             image_file.write(content)
 
 
 # _____stocker les données extraites dans un fichier csv_____
 def save_products_informations_in_csv(products_informations: list[dict]):
     CAT_DIR = _create_category_dir(products_informations)
-    CAT_DIR.mkdir(parents=True, exist_ok=True)
     with open(f"{CAT_DIR}/{products_informations[0].get("category")}.csv", "w", newline="",
               encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=products_informations[0].keys(), delimiter=",")
@@ -162,7 +166,6 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()
 
     # url_test = "https://books.toscrape.com/catalogue/category/books/philosophy_7/index.html"
@@ -170,4 +173,4 @@ if __name__ == "__main__":
     # products_urls = get_products_urls_from_category(pages_urls)
     # products_informations = get_products_informations(products_urls)
     # save_products_images(products_informations)
-    # save_products_informations_in_csv(product_informations)
+    # save_products_informations_in_csv(products_informations)
