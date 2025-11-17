@@ -10,16 +10,21 @@ DATA_DIR.mkdir(exist_ok=True)
 main_url = "https://books.toscrape.com"
 
 
+#_____obtenir une "soup" via une requete sur un url_____
+def get_soup_from_request(url):
+    r = requests.get(url)
+    if not r.status_code == 200:
+        raise ValueError("Impossible de récupérer l'url.")
+    return BeautifulSoup(r.content, "html.parser")
+
+
 #_____extraction des informations_____
 def get_product_informations(product_urls:list)->list[dict]:
     print(product_urls)
     products_informations = []
 
     for product_url in product_urls:
-        r = requests.get(product_url)
-        if not r.status_code == 200:
-          raise ValueError("Impossible de récupérer l'url.")
-        soup = BeautifulSoup(r.content, "html.parser")
+        soup = get_soup_from_request(product_url)
 
         #___url___
         product_page_url = product_url
@@ -73,11 +78,8 @@ def get_product_informations(product_urls:list)->list[dict]:
 # _____récupérer toutes les url d'une catégorie_____
 def get_products_urls_from_category(pages_urls) -> list :
     products_urls = []
-    for page in pages_urls:
-        r = requests.get(page)
-        if not r.status_code == 200:
-            raise ValueError("Impossible de récupérer l'url.")
-        soup = BeautifulSoup(r.content, "html.parser")
+    for page_url in pages_urls:
+        soup = get_soup_from_request(page_url)
 
         #___récupérer la totalité des urls de la page dans une liste___
         products = soup.find("ol", class_ = "row")
@@ -92,11 +94,8 @@ def get_products_urls_from_category(pages_urls) -> list :
 
 #_____ créer une liste d'url en focntion du nombre de pages d'une catégorie_____
 def get_pages_urls_from_category(category_url) -> list :
-    r = requests.get(category_url)
-    if not r.status_code == 200:
-        raise ValueError("Impossible de récupérer l'url.")
+    soup = get_soup_from_request(category_url)
 
-    soup = BeautifulSoup(r.content, "html.parser")
     pages_urls = [category_url]
 
     # ___conditionner le changement de page en fonction du nombre de page___
@@ -112,10 +111,7 @@ def get_pages_urls_from_category(category_url) -> list :
 
 #_____récupérer la catégorie en fonction de l'url de catégorie_____
 def get_category_from_url(category_url) -> str:
-    r = requests.get(category_url)
-    if not r.status_code == 200:
-        raise ValueError("Impossible de récupérer l'url.")
-    soup = BeautifulSoup(r.content, "html.parser")
+    soup = get_soup_from_request(category_url)
     category_name = soup.find("h1").get_text(strip=True)
     return category_name
 
@@ -133,9 +129,9 @@ def save_product_informations_in_csv(products_informations:list [dict], category
 
 
 if __name__ == "__main__":
-    url = "https://books.toscrape.com/catalogue/category/books/mystery_3/page-1.html"
-    pages_urls = get_pages_urls_from_category(url)
-    category = get_category_from_url(url)
+    url_test = "https://books.toscrape.com/catalogue/category/books/mystery_3/page-1.html"
+    pages_urls = get_pages_urls_from_category(url_test)
+    category = get_category_from_url(url_test)
     products_urls = get_products_urls_from_category(pages_urls)
     product_informations = get_product_informations(products_urls)
     save_product_informations_in_csv(product_informations, category)
