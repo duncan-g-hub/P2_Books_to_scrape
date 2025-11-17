@@ -117,9 +117,15 @@ def save_product_informations_in_csv(products_informations: list[dict]):
             writer.writerow(product_information)
 
 
+#_____Fonction main pour lancer l'application à partir de l'url principal du site_____
+def main():
+    gategories_urls = get_gategories_urls(main_url)
+    for category_url in gategories_urls :
+        pages_urls = get_pages_urls_from_category(category_url)
+        products_urls = get_products_urls_from_category(pages_urls)
+        product_informations = get_product_informations(products_urls)
+        save_product_informations_in_csv(product_informations)
+
+
 if __name__ == "__main__":
-    url_test = "https://books.toscrape.com/catalogue/category/books/mystery_3/page-1.html"
-    pages_urls = get_pages_urls_from_category(url_test)
-    products_urls = get_products_urls_from_category(pages_urls)
-    product_informations = get_product_informations(products_urls)
-    save_product_informations_in_csv(product_informations)
+    main()
