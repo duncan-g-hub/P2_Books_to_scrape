@@ -1,12 +1,15 @@
+from pathlib import Path
+import csv
 from bs4 import BeautifulSoup
 import requests
 
-
-#extraire des données via requests bs4 ; utiliser les balises html
-#données d'un produit
+CUR_DIR = Path(__file__).resolve().parent
+DATA_DIR = CUR_DIR / 'data'
 
 main_url = "https://books.toscrape.com"
 
+
+#_____extraction des informations_____
 def extract_book_informations(url):
     r = requests.get(url)
     if not r.status_code == 200:
@@ -14,7 +17,7 @@ def extract_book_informations(url):
 
     soup = BeautifulSoup(r.content, "html.parser")
 
-
+    #___url___
     product_page_url = url
 
     #___title___
@@ -61,15 +64,9 @@ def extract_book_informations(url):
     return book_informations
 
 
-
-
-
-
-
-
-# stocker les données extraites dabs un fichier csv
-
-
+# stocker les données extraites dans un fichier csv
+def save_book_informations_in_csv(book_informations):
+    pass
 
 if __name__ == "__main__":
     url = "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html"
