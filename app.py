@@ -20,28 +20,21 @@ def extract_book_informations(url):
     #___title___
     title = soup.find("h1").string
 
-
     #___category___
     breadcrumb = soup.find("ul", class_ = "breadcrumb")
     category = breadcrumb.find_all("li")[-2].get_text().strip()
-
-
 
     #___review_rating___
     rate = soup.find("p", class_="star-rating")
     review_rating = rate["class"][-1]
 
-
-
     #___image_url___
     image = soup.find("img")
     image_url = image["src"].replace("../..", main_url)
 
-
     #___description___
     description_header = soup.find("div", id="product_description")
     product_description = description_header.find_next("p").string
-
 
     #___product informations___
     informations = soup.find(class_ = "table table-striped")
@@ -57,9 +50,20 @@ def extract_book_informations(url):
             availability = information.find("td").string
             number_available = availability.split()[2].strip("(")
 
+    book_informations = {"title" : title,
+                         "url" : product_page_url,
+                         "category" : category,
+                         "review_rating" : review_rating,
+                         "image_url" : image_url,
+                         "description" : product_description,
+                         "upc" : upc,
+                         "price_excluding_tax" : price_excluding_tax,
+                         "price_including_tax" : price_including_tax,
+                         "number_available" : number_available
+                         }
 
+    return book_informations
 
-    book_informations = {}
 
 
 
