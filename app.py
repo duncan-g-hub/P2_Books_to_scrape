@@ -18,6 +18,52 @@ def get_soup_from_request(url):
     return BeautifulSoup(r.content, "html.parser")
 
 
+# _____Récupérer les urls de chaque catégories_____
+def get_gategories_urls(main_url) -> list:
+    soup = get_soup_from_request(main_url)
+    nav_list = soup.find("ul", class_="nav nav-list")
+    categories = nav_list.find_all("li")[1:]
+    categories_urls = []
+    for category in categories:
+        category_url = f"{main_url}/{category.find("a").get("href")}"
+        categories_urls.append(category_url)
+    print(categories_urls)
+    return categories_urls
+
+
+# _____ créer une liste d'url en fonction du nombre de pages d'une catégorie_____
+def get_pages_urls_from_category(category_url) -> list:
+    soup = get_soup_from_request(category_url)
+
+    pages_urls = [category_url]
+
+    # ___conditionner le changement de page en fonction du nombre de page___
+    next_btn = soup.find("li", class_="next")
+    if next_btn:
+        next_url = next_btn.find("a").get("href")
+        cat_url = category_url.split("/")
+        cat_url[-1] = next_url
+        next_url = "/".join(cat_url)
+        pages_urls.append(next_url)
+    return pages_urls
+
+
+# _____récupérer toutes les url d'une catégorie_____
+def get_products_urls_from_category(pages_urls) -> list:
+    products_urls = []
+    for page_url in pages_urls:
+        soup = get_soup_from_request(page_url)
+
+        # ___récupérer la totalité des urls de la page dans une liste___
+        products = soup.find("ol", class_="row")
+        products = products.find_all("li")
+        for product in products:
+            product_url = product.find("a").get("href").replace("../../..", f"{main_url}/catalogue")
+            products_urls.append(product_url)
+
+    return products_urls
+
+
 # _____extraction des informations_____
 def get_product_informations(product_urls: list) -> list[dict]:
     print(product_urls)
@@ -74,39 +120,6 @@ def get_product_informations(product_urls: list) -> list[dict]:
     return products_informations
 
 
-# _____récupérer toutes les url d'une catégorie_____
-def get_products_urls_from_category(pages_urls) -> list:
-    products_urls = []
-    for page_url in pages_urls:
-        soup = get_soup_from_request(page_url)
-
-        # ___récupérer la totalité des urls de la page dans une liste___
-        products = soup.find("ol", class_="row")
-        products = products.find_all("li")
-        for product in products:
-            product_url = product.find("a").get("href").replace("../../..", f"{main_url}/catalogue")
-            products_urls.append(product_url)
-
-    return products_urls
-
-
-# _____ créer une liste d'url en focntion du nombre de pages d'une catégorie_____
-def get_pages_urls_from_category(category_url) -> list:
-    soup = get_soup_from_request(category_url)
-
-    pages_urls = [category_url]
-
-    # ___conditionner le changement de page en fonction du nombre de page___
-    next_btn = soup.find("li", class_="next")
-    if next_btn:
-        next_url = next_btn.find("a").get("href")
-        cat_url = category_url.split("/")
-        cat_url[-1] = next_url
-        next_url = "/".join(cat_url)
-        pages_urls.append(next_url)
-    return pages_urls
-
-
 # _____stocker les données extraites dans un fichier csv_____
 def save_product_informations_in_csv(products_informations: list[dict]):
     with open(f"{DATA_DIR}/{products_informations[0].get("category")}.csv", "w",
@@ -117,10 +130,10 @@ def save_product_informations_in_csv(products_informations: list[dict]):
             writer.writerow(product_information)
 
 
-#_____Fonction main pour lancer l'application à partir de l'url principal du site_____
+# _____Fonction main pour lancer l'application à partir de l'url principal du site_____
 def main():
     gategories_urls = get_gategories_urls(main_url)
-    for category_url in gategories_urls :
+    for category_url in gategories_urls:
         pages_urls = get_pages_urls_from_category(category_url)
         products_urls = get_products_urls_from_category(pages_urls)
         product_informations = get_product_informations(products_urls)
