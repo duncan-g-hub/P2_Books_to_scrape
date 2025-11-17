@@ -5,6 +5,7 @@ import requests
 
 CUR_DIR = Path(__file__).resolve().parent
 DATA_DIR = CUR_DIR / 'data'
+DATA_DIR.mkdir(exist_ok=True)
 
 main_url = "https://books.toscrape.com"
 
@@ -64,10 +65,15 @@ def extract_book_informations(url):
     return book_informations
 
 
-# stocker les données extraites dans un fichier csv
+# _____stocker les données extraites dans un fichier csv_____
 def save_book_informations_in_csv(book_informations):
-    pass
+    with open(f"{DATA_DIR}/{book_informations['title']}.csv", "w", newline="") as csvfile: #newline ="" permet d'empecher la création de ligne vide dans le fichier csv
+        writer = csv.DictWriter(csvfile, fieldnames=book_informations.keys())
+        writer.writeheader()
+        writer.writerow(book_informations)
+
 
 if __name__ == "__main__":
     url = "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html"
-    extract_book_informations(url)
+    # extract_book_informations(url)
+    save_book_informations_in_csv(extract_book_informations(url))
