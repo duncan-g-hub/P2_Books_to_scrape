@@ -11,22 +11,22 @@ main_url = "https://books.toscrape.com"
 
 
 #_____extraction des informations_____
-def extract_book_informations(url):
-    r = requests.get(url)
+def extract_book_informations(product_url:str)->dict:
+    r = requests.get(product_url)
     if not r.status_code == 200:
       raise ValueError("Impossible de récupérer l'url.")
 
     soup = BeautifulSoup(r.content, "html.parser")
 
     #___url___
-    product_page_url = url
+    product_page_url = product_url
 
     #___title___
-    title = soup.find("h1").string
+    title = soup.find("h1").get_text(strip=True)
 
     #___category___
     breadcrumb = soup.find("ul", class_ = "breadcrumb")
-    category = breadcrumb.find_all("li")[-2].get_text().strip()
+    category = breadcrumb.find_all("li")[-2].get_text(strip=True)
 
     #___review_rating___
     rate = soup.find("p", class_="star-rating")
@@ -38,7 +38,7 @@ def extract_book_informations(url):
 
     #___description___
     description_header = soup.find("div", id="product_description")
-    product_description = description_header.find_next("p").string
+    product_description = description_header.find_next("p").get_text(strip=True)
 
     #___product informations___
     informations = soup.find(class_ = "table table-striped")
@@ -66,14 +66,37 @@ def extract_book_informations(url):
 
 
 # _____stocker les données extraites dans un fichier csv_____
-def save_book_informations_in_csv(book_informations):
+def save_book_informations_in_csv(book_informations:dict):
     with open(f"{DATA_DIR}/{book_informations['title']}.csv", "w", newline="") as csvfile: #newline ="" permet d'empecher la création de ligne vide dans le fichier csv
-        writer = csv.DictWriter(csvfile, fieldnames=book_informations.keys())
+        writer = csv.DictWriter(csvfile, fieldnames=book_informations.keys(), delimiter=",")
         writer.writeheader()
         writer.writerow(book_informations)
 
 
+# _____récupérer toutes les url d'une catégorie_____
+def get_books_urls_from_category(category_url) -> list :
+    r = requests.get(category_url)
+    if not r.status_code == 200:
+        raise ValueError("Impossible de récupérer l'url.")
+
+    soup = BeautifulSoup(r.content, "html.parser")
+
+    #___récupérer la totalité des urls de la page dans une liste___
+    books = soup.find("ol", class_ = "row")
+    books = books.find_all("li")
+    books_urls = []
+    for book in books:
+        book_url = book.find("a").get("href").replace("../../..", main_url)
+        books_urls.append(book_url)
+
+    return books_urls
+
+
+
+
+# Remarque : certaines pages de catégorie comptent plus de 20 livres, qui sont donc répartis sur différentes pages (« pagination »).
+# Votre application doit être capable de parcourir automatiquement les multiples pages si présentes.
+
 if __name__ == "__main__":
-    url = "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html"
-    # extract_book_informations(url)
-    save_book_informations_in_csv(extract_book_informations(url))
+    url = "https://books.toscrape.com/catalogue/category/books/mystery_3/index.html"
+    get_books_urls_from_category(url)
