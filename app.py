@@ -38,18 +38,14 @@ def extract_book_informations(url):
 
     #___product informations___
     informations = soup.find(class_ = "table table-striped")
-    informations = informations.find_all("tr")
-    for information in informations:
-        if information.find("th").string == "UPC":
-            upc = information.find("td").string
-        if information.find("th").string == "Price (excl. tax)":
-            price_excluding_tax = information.find("td").string
-        if information.find("th").string == "Price (incl. tax)":
-            price_including_tax = information.find("td").string
-        if information.find("th").string == "Availability":
-            availability = information.find("td").string
-            number_available = availability.split()[2].strip("(")
+    informations = informations.find_all("td")
+    upc = informations[0].string
+    price_excluding_tax = informations[2].string
+    price_including_tax = informations[3].string
+    number_available = informations[5].string.split()[2].strip("(")
 
+
+    #___créatioon du dict des informations___
     book_informations = {"title" : title,
                          "url" : product_page_url,
                          "category" : category,
