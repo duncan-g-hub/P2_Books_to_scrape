@@ -9,7 +9,6 @@ DATA_DIR.mkdir(exist_ok=True)
 
 main_url = "https://books.toscrape.com"
 
-
 # _____obtenir une "soup" via une requete sur un url_____
 def get_soup_from_request(url):
     r = requests.get(url)
@@ -27,14 +26,12 @@ def get_gategories_urls(main_url) -> list:
     for category in categories:
         category_url = f"{main_url}/{category.find("a").get("href")}"
         categories_urls.append(category_url)
-    print(categories_urls)
     return categories_urls
 
 
 # _____ créer une liste d'url en fonction du nombre de pages d'une catégorie_____
 def get_pages_urls_from_category(category_url) -> list:
     soup = get_soup_from_request(category_url)
-
     pages_urls = [category_url]
 
     # ___conditionner le changement de page en fonction du nombre de page___
@@ -60,7 +57,6 @@ def get_products_urls_from_category(pages_urls) -> list:
         for product in products:
             product_url = product.find("a").get("href").replace("../../..", f"{main_url}/catalogue")
             products_urls.append(product_url)
-
     return products_urls
 
 
@@ -116,14 +112,12 @@ def get_product_informations(product_urls: list) -> list[dict]:
                                 }
 
         products_informations.append(product_informations)
-
     return products_informations
 
 
 # _____stocker les données extraites dans un fichier csv_____
 def save_product_informations_in_csv(products_informations: list[dict]):
-    with open(f"{DATA_DIR}/{products_informations[0].get("category")}.csv", "w",
-              newline="") as csvfile:  # newline ="" permet d'empecher la création de ligne vide dans le fichier csv
+    with open(f"{DATA_DIR}/{products_informations[0].get("category")}.csv", "w",newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=products_informations[0].keys(), delimiter=",")
         writer.writeheader()
         for product_information in products_informations:
@@ -141,4 +135,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    url_test = "https://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"
+    pages_urls = get_pages_urls_from_category(url_test)
+    products_urls = get_products_urls_from_category(pages_urls)
+    product_informations = get_product_informations(products_urls)
+    save_product_informations_in_csv(product_informations)
