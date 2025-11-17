@@ -137,7 +137,7 @@ def save_products_images(products_informations):
     for product_informations in products_informations:
         image_url = product_informations.get("image_url")
         content = requests.get(image_url).content
-        image_name = f"{re.sub(r'[\/\\\:\?\*\"\<\>]', '', product_informations.get('title'))}.jpg"  # re.sub pour remplacer les caracteres non pris en compte par windows
+        image_name = f"{re.sub(r'[/\\:?*"<>]', '', product_informations.get('title'))}.jpg"  # re.sub pour remplacer les caracteres non pris en compte par windows
         with open(IM_DIR / image_name, "wb") as image_file:
             image_file.write(content)
 
@@ -151,7 +151,7 @@ def save_products_informations_in_csv(products_informations: list[dict]):
         writer.writeheader()
         for product_information in products_informations:
             writer.writerow(product_information)
-    print(f"Tous les livres de la catégorie {products_informations[0].get('category')} ont étés sauvegardés...")
+    print(f"Toutes les données des livres de la catégorie {products_informations[0].get('category')} ont étés sauvegardés...")
 
 
 # _____Fonction main pour lancer l'application à partir de l'url principal du site_____
