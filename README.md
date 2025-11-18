@@ -95,7 +95,7 @@ Ces données pourront ensuite etre utilisées pour :
 
 ## Contact
 
-Pour toute question :
- Duncan GAURAT - duncan.dev@outlook.fr
+Pour toute question :  
+Duncan GAURAT - duncan.dev@outlook.fr
 
             
