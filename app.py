@@ -129,7 +129,6 @@ def _create_category_dir(products_informations):
 
 
 # _____telecharger les images de chaque livre_____
-# utilisation du mode d'ouverture "wb" pour write binary
 def save_products_images(products_informations):
     CAT_DIR = _create_category_dir(products_informations)
     IM_DIR = CAT_DIR / "images"
@@ -138,7 +137,7 @@ def save_products_images(products_informations):
         image_url = product_informations.get("image_url")
         content = requests.get(image_url).content
         image_name = f"{re.sub(r'[/\\:?*"<>]', '', product_informations.get('title'))}.jpg"  # re.sub pour remplacer les caracteres non pris en compte par windows
-        with open(IM_DIR / image_name, "wb") as image_file:
+        with open(IM_DIR / image_name, "wb") as image_file: # utilisation du mode d'ouverture "wb" pour write binary
             image_file.write(content)
 
 
@@ -151,7 +150,7 @@ def save_products_informations_in_csv(products_informations: list[dict]):
         writer.writeheader()
         for product_information in products_informations:
             writer.writerow(product_information)
-    print(f"Toutes les données des livres de la catégorie {products_informations[0].get('category')} ont étés sauvegardés...")
+    print(f"Toutes les données des livres de la catégorie '{products_informations[0].get('category')}' ont étés sauvegardés...")
 
 
 # _____Fonction main pour lancer l'application à partir de l'url principal du site_____
