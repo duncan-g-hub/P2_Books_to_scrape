@@ -75,7 +75,7 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
-Les données et images extraites apparaitront automatiquement dans le dossier /data
+Les données et images extraites apparaitront automatiquement dans le dossier `/data`
 
 ---
 
@@ -96,6 +96,6 @@ Ces données pourront ensuite etre utilisées pour :
 ## Contact
 
 Pour toute question :
-Duncan GAURAT - duncan.dev@outlook.fr
+ Duncan GAURAT - duncan.dev@outlook.fr
 
             
