@@ -24,15 +24,15 @@ L'objectif est de constituer un **système de surveillance des prix**, avec un p
 
 ```
 P2_Books_to_scrape/
-    main.py # Script principal
-    requirements.txt # Dépendances
-    README.md # Documentation
+    main.py                         # Script principal
+    requirements.txt                # Dépendances
+    README.md                       # Documentation
 
-    data/ # Généré automatiquement (non inclus dans le repo GitHub)
-        <category>/ # Tri des données par catégorie
-            <category>.csv # Stockage des données des livres dans un fichier csv portant le nom de la categorie
-            images/ # Sous dossier images
-                <book_title>.jpg # Chaque image porte le nom du livre duquel elle est issue
+    data/                           # Généré automatiquement (non inclus dans le repo GitHub)
+        <category>/                 # Tri des données par catégorie
+            <category>.csv          # Stockage des données des livres dans un fichier csv portant le nom de la categorie
+            images/                 # Sous dossier images
+                <book_title>.jpg    # Chaque image est nommée d’après le titre du livre
 ```
 
 ---
