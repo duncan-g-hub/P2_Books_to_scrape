@@ -11,7 +11,7 @@ DATA_DIR.mkdir(exist_ok=True)
 main_url = "https://books.toscrape.com"
 
 
-# _____obtenir une "soup" via une requete sur un url_____
+# _____obtenir le code html d'une page via une requete sur un url_____
 def _get_soup_from_request(url):
     r = requests.get(url)
     if not r.status_code == 200:
@@ -65,7 +65,7 @@ def get_products_urls_from_category(pages_urls) -> list:
     return products_urls
 
 
-# _____extraction des informations_____
+# _____extraction des informations des livres_____
 def get_products_informations(product_urls: list) -> list[dict]:
     products_informations = []
 
@@ -103,7 +103,7 @@ def get_products_informations(product_urls: list) -> list[dict]:
         upc = informations[0].string
         price_excluding_tax = informations[2].string
         price_including_tax = informations[3].string
-        number_available = informations[5].string.split()[2].strip("(")
+        number_available = informations[5].string
 
         # ___création du dict des informations___
         product_informations = {"title": title,
@@ -122,35 +122,69 @@ def get_products_informations(product_urls: list) -> list[dict]:
     return products_informations
 
 
-def _create_category_dir(products_informations):
-    CAT_DIR = DATA_DIR / products_informations[0].get("category")
+def transform_products_informations(products_informations) -> list[dict]:
+    products_informations_transformed = []
+    for product_informations in products_informations:
+
+        # ___title_name___
+        title = product_informations.get('title')
+        # re.sub pour remplacer les caracteres non pris en compte par windows (save images)
+        product_informations['title'] = re.sub(r'[/\\:?*"<>]', '',title)
+
+        # ___nombre en stock en int___
+        number_available = product_informations["number_available"]
+        product_informations["number_available"] = int(number_available.split()[2].strip("("))
+
+        # ___review_rating en note x/5___
+        review_rating = product_informations["review_rating"]
+        if review_rating == "One":
+            product_informations["review_rating"] = "1/5"
+        elif review_rating == "Two":
+            product_informations["review_rating"] = "2/5"
+        elif review_rating == "Three":
+            product_informations["review_rating"] = "3/5"
+        elif review_rating == "Four":
+            product_informations["review_rating"] = "4/5"
+        elif review_rating == "Five":
+            product_informations["review_rating"] = "5/5"
+        else:
+            product_informations["review_rating"] = "0/5"
+
+        # ___ajout des informations produits transformés___
+        products_informations_transformed.append(product_informations)
+
+    return products_informations_transformed
+
+
+def _create_category_dir(category):
+    CAT_DIR = DATA_DIR / category
     CAT_DIR.mkdir(parents=True, exist_ok=True)
     return CAT_DIR
 
 
-# _____telecharger les images de chaque livre_____
-def save_products_images(products_informations):
-    CAT_DIR = _create_category_dir(products_informations)
+# _____sauegarder les images de chaque livre_____
+def save_products_images(products_data):
+    CAT_DIR = _create_category_dir(products_data[0].get("category"))
     IM_DIR = CAT_DIR / "images"
     IM_DIR.mkdir(exist_ok=True)
-    for product_informations in products_informations:
-        image_url = product_informations.get("image_url")
+    for product_data in products_data:
+        image_url = product_data.get("image_url")
         content = requests.get(image_url).content
-        image_name = f"{re.sub(r'[/\\:?*"<>]', '', product_informations.get('title'))}.jpg"  # re.sub pour remplacer les caracteres non pris en compte par windows
-        with open(IM_DIR / image_name, "wb") as image_file: # utilisation du mode d'ouverture "wb" pour write binary
+        image_name = f"{product_data.get('title')}.jpg"
+        with open(IM_DIR / image_name, "wb") as image_file:  # utilisation du mode d'ouverture "wb" pour write binary
             image_file.write(content)
 
 
-# _____stocker les données extraites dans un fichier csv_____
-def save_products_informations_in_csv(products_informations: list[dict]):
-    CAT_DIR = _create_category_dir(products_informations)
-    with open(f"{CAT_DIR}/{products_informations[0].get("category")}.csv", "w", newline="",
+# _____stocker les données dans un fichier csv_____
+def save_products_informations_in_csv(products_data: list[dict]):
+    CAT_DIR = _create_category_dir(products_data[0].get("category"))
+    with open(f"{CAT_DIR}/{products_data[0].get("category")}.csv", "w", newline="",
               encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=products_informations[0].keys(), delimiter=",")
+        writer = csv.DictWriter(csvfile, fieldnames=products_data[0].keys(), delimiter=",")
         writer.writeheader()
-        for product_information in products_informations:
-            writer.writerow(product_information)
-    print(f"Toutes les données des livres de la catégorie '{products_informations[0].get('category')}' ont étés sauvegardés...")
+        for product_data in products_data:
+            writer.writerow(product_data)
+    print(f"Toutes les données des livres de la catégorie '{products_data[0].get('category')}' ont étés sauvegardés...")
 
 
 # _____Fonction main pour lancer l'application à partir de l'url principal du site_____
@@ -160,16 +194,18 @@ def main():
         pages_urls = get_pages_urls_from_category(category_url)
         products_urls = get_products_urls_from_category(pages_urls)
         products_informations = get_products_informations(products_urls)
-        save_products_images(products_informations)
-        save_products_informations_in_csv(products_informations)
+        products_informations_transformed = transform_products_informations(products_informations)
+        save_products_images(products_informations_transformed)
+        save_products_informations_in_csv(products_informations_transformed)
 
 
 if __name__ == "__main__":
-    main()
+    # main()
 
-    # url_test = "https://books.toscrape.com/catalogue/category/books/philosophy_7/index.html"
-    # pages_urls = get_pages_urls_from_category(url_test)
-    # products_urls = get_products_urls_from_category(pages_urls)
-    # products_informations = get_products_informations(products_urls)
-    # save_products_images(products_informations)
-    # save_products_informations_in_csv(products_informations)
+    url_test = "https://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
+    pages_urls = get_pages_urls_from_category(url_test)
+    products_urls = get_products_urls_from_category(pages_urls)
+    products_informations = get_products_informations(products_urls)
+    products_informations_transformed = transform_products_informations(products_informations)
+    save_products_images(products_informations_transformed)
+    save_products_informations_in_csv(products_informations_transformed)
