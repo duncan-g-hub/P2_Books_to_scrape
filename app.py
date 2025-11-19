@@ -200,12 +200,12 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
 
-    url_test = "https://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
-    pages_urls = get_pages_urls_from_category(url_test)
-    products_urls = get_products_urls_from_category(pages_urls)
-    products_informations = get_products_informations(products_urls)
-    products_informations_transformed = transform_products_informations(products_informations)
-    save_products_images(products_informations_transformed)
-    save_products_informations_in_csv(products_informations_transformed)
+    # url_test = "https://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
+    # pages_urls = get_pages_urls_from_category(url_test)
+    # products_urls = get_products_urls_from_category(pages_urls)
+    # products_informations = get_products_informations(products_urls)
+    # products_informations_transformed = transform_products_informations(products_informations)
+    # save_products_images(products_informations_transformed)
+    # save_products_informations_in_csv(products_informations_transformed)
