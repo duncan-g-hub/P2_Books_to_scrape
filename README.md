@@ -10,10 +10,14 @@ L'objectif est de constituer un **système de surveillance des prix**, avec un p
 ## Fonctionnalités
 
 - Extraction automatique : 
-    - Catégories de livres
-    - Pages de chaque catégorie
-    - URL de chaque livre
-    - Informations détaillées : titre, UPC, prix TTC/HT, stock disponible, description, notation, catégorie, URL d'image
+  - Catégories de livres
+  - Pages de chaque catégorie
+  - URL de chaque livre
+  - Informations détaillées : titre, UPC, prix TTC/HT, stock disponible, description, notation, catégorie, URL d'image
+- Modification des données : 
+  - Nettoyage des caracteres non-autorisés pour les noms de fichiers
+  - Conversion du stock en numérique
+  - Formatage des notes en notations x/5
 - Stockage des données dans un fichier CSV par catégorie 
 - Téléchargement des images
 - Organisation automatique dans un dossier `/data/<category>/`
