@@ -66,6 +66,14 @@ git clone https://github.com/duncan-g-hub/P2_Books_to_scrape.git
 cd P2_Books_to_scrape/
 ```
 
+### Créer et activer l'environnement virtuel : 
+
+```bash
+cd P2_Books_to_scrape/
+python -m venv env 
+source env/Scripts/activate
+```
+
 ### Installer les dépendances : 
 
 ```bash
