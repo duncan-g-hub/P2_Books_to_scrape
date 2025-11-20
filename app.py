@@ -11,7 +11,7 @@ DATA_DIR.mkdir(exist_ok=True)
 main_url = "https://books.toscrape.com"
 
 
-# _____Utilitaire : obtenir le code html d'une page via une requete sur un url_____
+# _____obtenir le code html d'une page via une requete sur un url_____
 def _get_soup_from_request(url):
     r = requests.get(url)
     if not r.status_code == 200:
@@ -157,7 +157,7 @@ def transform_products_informations(products_informations) -> list[dict]:
     return products_informations_transformed
 
 
-# _____Utilitaires : Création dossier Categorie______
+# _____Création dossier Categorie______
 def _create_category_dir(category):
     CAT_DIR = DATA_DIR / category
     CAT_DIR.mkdir(parents=True, exist_ok=True)
@@ -191,8 +191,7 @@ def save_products_informations_in_csv(products_data: list[dict]):
 
 # _____Fonction main pour lancer l'application à partir de l'url principal du site_____
 def main():
-    categories_urls = get_categories_urls(main_url)
-    for category_url in categories_urls:
+    for category_url in get_categories_urls(main_url):
         pages_urls = get_pages_urls_from_category(category_url)
         products_urls = get_products_urls_from_category(pages_urls)
         products_informations = get_products_informations(products_urls)
