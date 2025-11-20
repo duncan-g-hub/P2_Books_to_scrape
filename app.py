@@ -11,7 +11,7 @@ DATA_DIR.mkdir(exist_ok=True)
 main_url = "https://books.toscrape.com"
 
 
-# _____obtenir le code html d'une page via une requete sur un url_____
+# _____Utilitaire : obtenir le code html d'une page via une requete sur un url_____
 def _get_soup_from_request(url):
     r = requests.get(url)
     if not r.status_code == 200:
@@ -122,6 +122,7 @@ def get_products_informations(product_urls: list) -> list[dict]:
     return products_informations
 
 
+# _____ Formater/Transformer les données _____
 def transform_products_informations(products_informations) -> list[dict]:
     products_informations_transformed = []
     for product_informations in products_informations:
@@ -129,7 +130,7 @@ def transform_products_informations(products_informations) -> list[dict]:
         # ___title_name___
         title = product_informations.get('title')
         # re.sub pour remplacer les caracteres non pris en compte par windows (save images)
-        product_informations['title'] = re.sub(r'[/\\:?*"<>]', '',title)
+        product_informations['title'] = re.sub(r'[/\\:?*"<>]', '', title)
 
         # ___nombre en stock en int___
         number_available = product_informations["number_available"]
@@ -156,6 +157,7 @@ def transform_products_informations(products_informations) -> list[dict]:
     return products_informations_transformed
 
 
+# _____Utilitaires : Création dossier Categorie______
 def _create_category_dir(category):
     CAT_DIR = DATA_DIR / category
     CAT_DIR.mkdir(parents=True, exist_ok=True)
@@ -189,8 +191,8 @@ def save_products_informations_in_csv(products_data: list[dict]):
 
 # _____Fonction main pour lancer l'application à partir de l'url principal du site_____
 def main():
-    gategories_urls = get_categories_urls(main_url)
-    for category_url in gategories_urls:
+    categories_urls = get_categories_urls(main_url)
+    for category_url in categories_urls:
         pages_urls = get_pages_urls_from_category(category_url)
         products_urls = get_products_urls_from_category(pages_urls)
         products_informations = get_products_informations(products_urls)
