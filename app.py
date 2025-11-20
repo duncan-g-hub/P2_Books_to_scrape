@@ -31,44 +31,46 @@ def get_categories_urls(main_url) -> list:
     return categories_urls
 
 
-# _____ créer une liste d'url en fonction du nombre de pages d'une catégorie_____
-def get_pages_urls_from_category(category_url) -> list:
-    soup = _get_soup_from_request(category_url)
-    pages_urls = [category_url]
+# ___récupérer les urls produit via le code html la page___
+def _get_products_urls_from_soup(soup) -> list:
+    products_urls = []
+    products = soup.find("ol", class_="row").find_all("li")
+    for product in products:
+        product_url = product.find("a").get("href").replace("../../..", f"{main_url}/catalogue")
+        products_urls.append(product_url)
+    return products_urls
 
-    # ___conditionner le changement de page en fonction du nombre de page___
+
+# _____récupérer toutes les url de produit de toutes les pages d'une catégorie_____
+def get_products_urls_from_each_category_pages(category_url) -> list:
+    soup = _get_soup_from_request(category_url)
+    products_urls = []
+
+    # ___récupérer les urls produit de la première page___
+    products_urls.extend(_get_products_urls_from_soup(soup))
+
+    # ___boucler sur le changement de page en fonction de la présence du bouton next___
     next_btn = soup.find("li", class_="next")
     while next_btn:
-        next_url = next_btn.find("a").get("href")
-        cat_url = category_url.split("/")
-        cat_url[-1] = next_url
-        next_url = "/".join(cat_url)
-        pages_urls.append(next_url)
+        # ___récupérer l'url de la page suivante___
+        next_page = next_btn.find("a").get("href")
+        next_url = category_url.replace("index.html", next_page)
+
+        # ___récupérer le code html de la page suivante___
         soup = _get_soup_from_request(next_url)
+
+        # ___récupérer les urls produit de la page suivante___
+        products_urls.extend(_get_products_urls_from_soup(soup))
+
+        # ___récuperer la présence du bouton next___
         next_btn = soup.find("li", class_="next")
 
-    return pages_urls
-
-
-# _____récupérer toutes les url d'une catégorie_____
-def get_products_urls_from_category(pages_urls) -> list:
-    products_urls = []
-    for page_url in pages_urls:
-        soup = _get_soup_from_request(page_url)
-
-        # ___récupérer la totalité des urls de la page dans une liste___
-        products = soup.find("ol", class_="row")
-        products = products.find_all("li")
-        for product in products:
-            product_url = product.find("a").get("href").replace("../../..", f"{main_url}/catalogue")
-            products_urls.append(product_url)
     return products_urls
 
 
 # _____extraction des informations des livres_____
 def get_products_informations(product_urls: list) -> list[dict]:
     products_informations = []
-
     for product_url in product_urls:
         soup = _get_soup_from_request(product_url)
 
@@ -123,7 +125,7 @@ def get_products_informations(product_urls: list) -> list[dict]:
 
 
 # _____ Formater/Transformer les données _____
-def transform_products_informations(products_informations) -> list[dict]:
+def transform_products_informations(products_informations: list[dict]) -> list[dict]:
     products_informations_transformed = []
     for product_informations in products_informations:
 
@@ -164,8 +166,8 @@ def _create_category_dir(category):
     return CAT_DIR
 
 
-# _____sauegarder les images de chaque livre_____
-def save_products_images(products_data):
+# _____sauvegarder les images de chaque livre_____
+def save_products_images(products_data: list[dict]):
     CAT_DIR = _create_category_dir(products_data[0].get("category"))
     IM_DIR = CAT_DIR / "images"
     IM_DIR.mkdir(exist_ok=True)
@@ -192,8 +194,7 @@ def save_products_informations_in_csv(products_data: list[dict]):
 # _____Fonction main pour lancer l'application à partir de l'url principal du site_____
 def main():
     for category_url in get_categories_urls(main_url):
-        pages_urls = get_pages_urls_from_category(category_url)
-        products_urls = get_products_urls_from_category(pages_urls)
+        products_urls = get_products_urls_from_each_category_pages(category_url)
         products_informations = get_products_informations(products_urls)
         products_informations_transformed = transform_products_informations(products_informations)
         save_products_images(products_informations_transformed)
@@ -204,8 +205,7 @@ if __name__ == "__main__":
     main()
 
     # url_test = "https://books.toscrape.com/catalogue/category/books/fiction_10/index.html"
-    # pages_urls = get_pages_urls_from_category(url_test)
-    # products_urls = get_products_urls_from_category(pages_urls)
+    # products_urls = get_products_urls_from_each_category_pages(url_test)
     # products_informations = get_products_informations(products_urls)
     # products_informations_transformed = transform_products_informations(products_informations)
     # save_products_images(products_informations_transformed)
